@@ -81,6 +81,23 @@ int main(int argc, const char * argv[])
 		
 		for (NSXMLElement *layer in [doc rootElement].children)
 		{
+			
+			NSString *display = [[layer attributeForName:@"display"] stringValue];
+			
+			if ([display isEqualToString:@"none"])
+			{
+				// Skip hidden layers
+				continue;
+			}
+			
+			CGFloat opacity = 1.0;
+			NSString *opacityString = [[layer attributeForName:@"opacity"] stringValue];
+			
+			if (opacityString)
+			{
+				opacity = [opacityString floatValue];
+			}
+			
 			for (NSXMLElement *child in layer.children)
 			{
 				CGFloat x = [[[child attributeForName:@"x"] stringValue] floatValue];
@@ -89,13 +106,15 @@ int main(int argc, const char * argv[])
 				CGFloat h = [[[child attributeForName:@"height"] stringValue] floatValue];
 				NSString *fill = [[[child attributeForName:@"fill"] stringValue] substringFromIndex:1];
 				
-				NSColor *fillColor = [NSColor colorWithHexColorString:fill];
+				NSColor *fillColor = [[NSColor colorWithHexColorString:fill] colorWithAlphaComponent:opacity];
+				
 				
 				[fillColor set];
-				NSRectFill(CGRectMake(x, y, w, h));
+				[NSBezierPath fillRect:CGRectMake(x, y, w, h)];
+				
 			}
 		}
-
+		
 		[image unlockFocus];
 		
 		NSBitmapImageRep *rep = [[NSBitmapImageRep alloc]
